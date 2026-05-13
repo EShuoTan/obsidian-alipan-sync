@@ -24,9 +24,8 @@ export default class DeleteConfirmModal extends Modal {
 		contentEl.empty()
 
 		const instruction = contentEl.createEl('p', {
-			cls: 'delete-confirm-instruction',
+			cls: 'delete-confirm-instruction alipan-text-prewrap',
 		})
-		instruction.style.whiteSpace = 'pre-wrap'
 		instruction.setText(i18n.t('deleteConfirm.instruction'))
 
 		const tableContainer = contentEl.createDiv({
@@ -36,17 +35,16 @@ export default class DeleteConfirmModal extends Modal {
 
 		const thead = table.createEl('thead')
 		const headerRow = thead.createEl('tr')
-		const selectHeader = headerRow.createEl('th', {
+		headerRow.createEl('th', {
 			text: i18n.t('deleteConfirm.select'),
+			cls: 'alipan-text-center',
 		})
-		selectHeader.style.textAlign = 'center'
 		headerRow.createEl('th', { text: i18n.t('deleteConfirm.filePath'), cls: 'col-path' })
 
 		const tbody = table.createEl('tbody')
 		this.tasks.forEach((task, index) => {
 			const row = tbody.createEl('tr')
-			const checkboxCell = row.createEl('td')
-			checkboxCell.style.textAlign = 'center'
+			const checkboxCell = row.createEl('td', { cls: 'alipan-text-center' })
 			const checkbox = checkboxCell.createEl('input')
 			checkbox.type = 'checkbox'
 			checkbox.checked = this.selectedTasks[index]
@@ -65,8 +63,7 @@ export default class DeleteConfirmModal extends Modal {
 			row.createEl('td', { text: task.localPath, cls: 'col-path' })
 		})
 
-		const settingDiv = contentEl.createDiv()
-		settingDiv.style.marginTop = '1rem'
+		const settingDiv = contentEl.createDiv({ cls: 'alipan-mt-1' })
 		new Setting(settingDiv)
 			.addButton((button) => {
 				button

@@ -133,3 +133,51 @@ input.success {
 	margin: 0;
 	cursor: pointer;
 }
+
+/* ============================================================
+ * Modal & settings layout helpers
+ * Replaces previous inline element.style.* assignments to comply
+ * with Obsidian plugin guidelines (no inline styles).
+ * ============================================================ */
+
+/* Preserve newlines in instructional text */
+.alipan-text-prewrap {
+	white-space: pre-wrap;
+}
+
+/* Center-align cells (used by Modal table headers / checkbox cells) */
+.alipan-text-center {
+	text-align: center;
+}
+
+/* Standard top spacing between modal sections (~1rem) */
+.alipan-mt-1 {
+	margin-top: 1rem;
+}
+
+/* Tighter top spacing (~4px) for inline hints under settings */
+.alipan-mt-xs {
+	margin-top: 4px;
+}
+
+/* Advanced configuration <details> styling */
+.alipan-advanced-details {
+	margin-top: 1em;
+	cursor: pointer;
+}
+
+/* Padding under <summary> when <details> opens */
+.alipan-advanced-content {
+	padding-top: 0.5em;
+}
+
+/* Wide text input used for redirect URI (full width, sensible minimum) */
+.alipan-text-input-wide {
+	width: 100%;
+	min-width: 300px;
+}
+
+/* Inline warning text (uses theme variable, theme-aware) */
+.alipan-text-warning {
+	color: var(--text-warning);
+}

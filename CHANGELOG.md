@@ -10,6 +10,14 @@
 > 0.8.0 之前的版本包含原始坚果云实现的引用。
 > 从 0.8.x 开始，后端迁移至阿里云盘开放 API。
 
+## [1.1.7] - 2026-05-13
+
+- 合规：移除所有 `element.style.*` 内联样式，改用 CSS 类（或动态进度条用 `setCssProps`），通过 Obsidian 官方插件审核扫描。
+- 合规：升级 `pnpm-lock.yaml` 到 lockfileVersion 9（兼容 pnpm v10.33.4）。
+- Compliance: Replace all `element.style.*` inline style assignments with CSS classes (and `setCssProps` for the dynamic progress bar) to pass Obsidian plugin review scan.
+- Compliance: Regenerate `pnpm-lock.yaml` with lockfileVersion 9 to be compatible with pnpm v10.33.4.
+
+
 ## [1.1.6] - 2026-04-28
 
 - 修复：多端同步（两台 Mac + 手机）场景下，当一端覆盖文件后另一端仍持有旧 file_id 缓存，导致下载时报 `ForbiddenFileInTheRecycleBin (403)` 错误，需等待下次同步才能自愈。现在遇到此错误会自动刷新父目录缓存并当次重试成功。

@@ -47,8 +47,7 @@ export default class FailedTasksModal extends Modal {
 			row.createEl('td', { text: task.errorMessage, cls: 'col-path' })
 		})
 
-		const settingDiv = contentEl.createDiv()
-		settingDiv.style.marginTop = '1rem'
+		const settingDiv = contentEl.createDiv({ cls: 'alipan-mt-1' })
 		new Setting(settingDiv).addButton((button) => {
 			button
 				.setButtonText(i18n.t('failedTasks.close'))

@@ -220,16 +220,17 @@ export default class AlipanAccountSettings extends BaseSettings {
 			})
 
 		// ---- Advanced: custom App ID / Secret / Token config (collapsed) ----
-		const advancedDetails = this.containerEl.createEl('details')
+		const advancedDetails = this.containerEl.createEl('details', {
+			cls: 'alipan-advanced-details',
+		})
 		advancedDetails.createEl('summary', {
 			text: i18n.t('settings.alipan.advancedConfig'),
 			cls: 'setting-item-name',
 		})
-		advancedDetails.style.marginTop = '1em'
-		advancedDetails.style.cursor = 'pointer'
 
-		const advancedContainer = advancedDetails.createDiv()
-		advancedContainer.style.paddingTop = '0.5em'
+		const advancedContainer = advancedDetails.createDiv({
+			cls: 'alipan-advanced-content',
+		})
 
 		// Custom App ID
 		new Setting(advancedContainer)
@@ -279,24 +280,22 @@ export default class AlipanAccountSettings extends BaseSettings {
 						await this.plugin.saveSettings()
 						updateRedirectHint()
 					})
-				text.inputEl.style.width = '100%'
-				text.inputEl.style.minWidth = '300px'
+				text.inputEl.classList.add('alipan-text-input-wide')
 			})
 
 		// Show a warning if the URI scheme is not obsidian://
 		const hintEl = redirectUriSetting.descEl.createEl('div', {
-			cls: 'setting-item-description',
+			cls: 'setting-item-description alipan-mt-xs',
 		})
-		hintEl.style.marginTop = '4px'
 
 		const updateRedirectHint = () => {
 			hintEl.empty()
 			if (redirectUriValue && !redirectUriValue.startsWith('obsidian://')) {
-				hintEl.style.color = 'var(--text-warning)'
+				hintEl.classList.add('alipan-text-warning')
 				hintEl.textContent =
 					i18n.t('settings.alipan.redirectUriWarning')
 			} else {
-				hintEl.style.color = ''
+				hintEl.classList.remove('alipan-text-warning')
 				hintEl.textContent = ''
 			}
 		}

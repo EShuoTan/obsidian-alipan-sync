@@ -70,7 +70,7 @@ export default class SyncProgressModal extends Modal {
 		const percent =
 			Math.round((progress.completed.length / progress.total) * 100) || 0
 
-		this.progressBar.style.width = `${percent}%`
+		this.progressBar.setCssProps({ width: `${percent}%` })
 		this.progressText.setText(
 			i18n.t('sync.percentComplete', {
 				percent,
@@ -303,7 +303,7 @@ export default class SyncProgressModal extends Modal {
 
 		const percent = Math.round((completed / total) * 100) || 0
 
-		this.cacheProgressBar.style.width = `${percent}%`
+		this.cacheProgressBar.setCssProps({ width: `${percent}%` })
 		this.cacheProgressText.setText(
 			i18n.t('sync.percentComplete', {
 				percent,

@@ -1,4 +1,14 @@
-const INVALID_CHARS = ':*?"<>|'
+/**
+ * Characters that are invalid for the Alipan (阿里云盘) API file names.
+ *
+ * Only path separators and control characters are truly rejected by the API.
+ * Windows-specific restrictions ( : * ? " < > | ) are NOT enforced here because:
+ *   - The Alipan API allows them in file names.
+ *   - macOS and Linux file systems also allow them.
+ *   - On Windows, Obsidian itself prevents creating files with these characters,
+ *     so a sync failure at the OS level would surface as a clear file-system error.
+ */
+const INVALID_CHARS = '\\/\t\r\n'
 const INVALID_CHARS_LIST = INVALID_CHARS.split('')
 
 export function hasInvalidChar(str: string) {

@@ -10,6 +10,16 @@
 > 0.8.0 之前的版本包含原始坚果云实现的引用。
 > 从 0.8.x 开始，后端迁移至阿里云盘开放 API。
 
+## [1.1.9] - 2026-06-30
+
+- 修复：文件名包含 `|` `:` `*` `?` `"` `<` `>` 等 Windows 特殊字符时同步失败的问题。这些字符在阿里云盘 API 和 macOS/Linux 文件系统中均合法，不再被误判为非法字符 ([#1](https://github.com/nowszhao/obsidian-alipan-sync/issues/1))。
+- 修复：移动端（Android/iOS）上传文件时 OSS 返回 `SignatureDoesNotMatch` 错误。原因是移动端 HTTP 桥接自动添加 `Content-Type` 头导致预签名 URL 签名不匹配，改用 `fetch` API 上传以避免此问题 ([#2](https://github.com/nowszhao/obsidian-alipan-sync/issues/2))。
+- 修复：Android 端插件加载失败。移除了不兼容 Android WebView 的 `blob-polyfill` 依赖，并调整了 polyfill 初始化顺序 ([#3](https://github.com/nowszhao/obsidian-alipan-sync/issues/3))。
+- Fix: Files with Windows-specific special characters (`|` `:` `*` `?` `"` `<` `>`) in the name no longer fail to sync. These characters are valid in the Alipan API and on macOS/Linux file systems ([#1](https://github.com/nowszhao/obsidian-alipan-sync/issues/1)).
+- Fix: Mobile (Android/iOS) file upload failing with `SignatureDoesNotMatch` from OSS. The mobile HTTP bridge auto-added a `Content-Type` header that wasn't in the pre-signed URL signature. Now uses `fetch` API for uploads to avoid this ([#2](https://github.com/nowszhao/obsidian-alipan-sync/issues/2)).
+- Fix: Plugin failing to load on Android. Removed `blob-polyfill` dependency that was incompatible with Android WebView, and reordered polyfill initialization ([#3](https://github.com/nowszhao/obsidian-alipan-sync/issues/3)).
+
+
 ## [1.1.8] - 2026-05-13
 
 - 合规：将 `minAppVersion` 从 `1.0.0` 提升至 `1.5.7`，匹配代码中实际使用的 Obsidian API 最低要求（`Vault.getFileByPath` / `getFolderByPath` 需要 v1.5.7，`Vault.createFolder` 需要 v1.4.0，`ButtonComponent.setIcon` 需要 v1.1.0）。Obsidian v1.5.7 发布于 2024 年 1 月，绝大多数用户已升级，无需任何用户操作。

@@ -256,32 +256,56 @@ export class AlipanClient {
 		uploadUrl: string,
 		content: ArrayBuffer,
 	): Promise<void> {
-		// IMPORTANT: Do NOT set Content-Type header here.
-		// The upload_url is a pre-signed OSS URL. If we send a Content-Type header
-		// that wasn't included in the signature calculation, OSS returns 403
-		// SignatureDoesNotMatch. Omitting Content-Type keeps it consistent with
-		// how Alipan generated the pre-signed URL.
+		// Use fetch() instead of requestUrl() for the OSS PUT upload.
+		//
+		// Reason: On mobile (Android/iOS), Obsidian's requestUrl uses Capacitor's
+		// native HTTP bridge which may auto-add a "Content-Type" header (e.g.
+		// "application/octet-stream") to the PUT request. The upload_url is a
+		// pre-signed OSS URL whose signature was calculated WITHOUT a Content-Type
+		// header. Sending an unexpected Content-Type causes OSS to return
+		// 403 SignatureDoesNotMatch.
+		//
+		// fetch() does NOT auto-add Content-Type for ArrayBuffer bodies, ensuring
+		// the request matches the pre-signed URL's signature on all platforms.
+		// If fetch() fails (e.g. due to CORS), we fall back to requestUrl().
 		for (let attempt = 0; attempt <= MAX_429_RETRIES; attempt++) {
-			const response = await requestUrl({
-				url: uploadUrl,
-				method: 'PUT',
-				body: content,
-				throw: false,
-			})
+			let status: number
+			let responseText: string
 
-			if (response.status === 403 && attempt < MAX_429_RETRIES) {
-				// Pre-signed URL signature mismatch or expired — log and retry
-				// with a brief delay (the URL may have expired while waiting in queue)
+			try {
+				const fetchResponse = await fetch(uploadUrl, {
+					method: 'PUT',
+					body: content,
+				})
+				status = fetchResponse.status
+				responseText = await fetchResponse.text()
+			} catch {
+				// fetch failed (likely CORS on desktop) — fall back to requestUrl
 				logger.warn(
-					`Alipan upload part got 403, retrying (attempt ${attempt + 1}/${MAX_429_RETRIES}): ${response.text?.substring(0, 200)}`,
+					'Alipan upload: fetch() failed, falling back to requestUrl()',
+				)
+				const fallbackResponse = await requestUrl({
+					url: uploadUrl,
+					method: 'PUT',
+					body: content,
+					throw: false,
+				})
+				status = fallbackResponse.status
+				responseText = fallbackResponse.text || ''
+			}
+
+			if (status === 403 && attempt < MAX_429_RETRIES) {
+				// Pre-signed URL signature mismatch or expired — log and retry
+				logger.warn(
+					`Alipan upload part got 403, retrying (attempt ${attempt + 1}/${MAX_429_RETRIES}): ${responseText?.substring(0, 200)}`,
 				)
 				await sleep(1000 * (attempt + 1))
 				continue
 			}
 
-			if (response.status >= 400) {
+			if (status >= 400) {
 				throw new Error(
-					`Alipan upload part failed [${response.status}]: ${response.text}`,
+					`Alipan upload part failed [${status}]: ${responseText}`,
 				)
 			}
 

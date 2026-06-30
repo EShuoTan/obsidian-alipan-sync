@@ -1,7 +1,6 @@
-import 'blob-polyfill'
-import 'core-js/stable'
-
 import './polyfill'
+
+import 'core-js/stable'
 
 import './assets/styles/global.css'
 

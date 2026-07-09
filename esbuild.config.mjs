@@ -22,6 +22,34 @@ const renamePlugin = {
 	},
 }
 
+/**
+ * esbuild plugin to patch localforage's internal setImmediate polyfill
+ * which uses document.createElement('script') as a fallback, triggering
+ * Obsidian community plugin review warnings.
+ *
+ * The script-based fallback is dead code in modern browsers (MutationObserver
+ * is always available), but the review bot scans for the literal string
+ * pattern in the output. We replace it with the setTimeout fallback.
+ */
+const patchLocalforage = {
+	name: 'patch-localforage',
+	setup(build) {
+		build.onLoad({ filter: /localforage[/\\]dist[/\\]localforage\.js$/ }, (args) => {
+			let contents = fs.readFileSync(args.path, 'utf-8')
+
+			// Replace the script-element-based setImmediate fallback with a
+			// safe setTimeout fallback. This collapses the two else branches
+			// into one, removing both document.createElement('script') calls.
+			contents = contents.replace(
+				/\} else if \('document' in global && 'onreadystatechange' in global\.document\.createElement\('script'\)\) \{[\s\S]*?\} else \{/,
+				'} else {',
+			)
+
+			return { contents, loader: 'js' }
+		})
+	},
+}
+
 const context = await esbuild.context({
 	entryPoints: ['src/index.ts'],
 	bundle: true,
@@ -53,6 +81,7 @@ const context = await esbuild.context({
 	minify: prod,
 	platform: 'browser',
 	plugins: [
+		patchLocalforage,
 		postcss({
 			plugins: [UnoCSS(), postcssMergeRules()],
 		}),

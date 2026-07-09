@@ -1,7 +1,5 @@
 import './polyfill'
 
-import 'core-js/stable'
-
 import './assets/styles/global.css'
 
 import { normalizePath, Notice, Plugin } from 'obsidian'

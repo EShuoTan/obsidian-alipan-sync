@@ -155,6 +155,17 @@ function Get-TrackedReleaseFiles {
 	return $files
 }
 
+function Restore-PnpmShimNoise {
+	param([Parameter(Mandatory = $true)][string]$WorkingDirectory)
+
+	$shimPaths = @(
+		"packages/remote-explorer/node_modules/.bin/rslib",
+		"packages/remote-explorer/node_modules/.bin/tsc",
+		"packages/remote-explorer/node_modules/.bin/tsserver"
+	)
+	Get-GitOutput -Arguments (@("restore", "--") + $shimPaths) -WorkingDirectory $WorkingDirectory | Out-Null
+}
+
 function Bump-Version {
 	param([Parameter(Mandatory = $true)][string]$WorkingDirectory)
 
@@ -278,6 +289,7 @@ if (-not $NoPublish) {
 
 Write-Host "==> Releasing $ProjectName from $Root"
 Invoke-Checked -FilePath "pnpm" -Arguments @("install", "--frozen-lockfile") -WorkingDirectory $Root
+Restore-PnpmShimNoise -WorkingDirectory $Root
 
 $version = Start-Or-ResumeReleaseVersion -WorkingDirectory $Root
 Invoke-Checked -FilePath "pnpm" -Arguments $BuildArgs -WorkingDirectory $Root

@@ -1,19 +1,15 @@
 import logger from '~/utils/logger'
+import { readLocalBinary } from '~/utils/local-file'
 import { BaseTask, toTaskError } from './task.interface'
 
 export default class PushTask extends BaseTask {
 	async exec() {
 		try {
-			const file = this.vault.getFileByPath(this.localPath)
-			if (!file) {
-				throw new Error('cannot find file in local fs: ' + this.localPath)
-			}
-
 			if (!this.remoteStorage) {
 				throw new Error('Remote storage not available')
 			}
 
-			const content = await this.vault.readBinary(file)
+			const content = await readLocalBinary(this.vault, this.localPath)
 			const res = await this.remoteStorage.putFileContents(
 				this.remotePath,
 				content,

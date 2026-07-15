@@ -25,6 +25,12 @@ export async function mkdirsVault(vault: Vault, path: string) {
 		if (!pop) {
 			continue
 		}
-		await vault.createFolder(pop)
+		try {
+			await vault.createFolder(pop)
+		} catch {
+			if (!(await vault.adapter.exists(pop))) {
+				await vault.adapter.mkdir(pop)
+			}
+		}
 	}
 }

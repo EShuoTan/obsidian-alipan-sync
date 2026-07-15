@@ -1,6 +1,7 @@
 import { dirname } from 'path-browserify'
 import logger from '~/utils/logger'
 import { mkdirsVault } from '~/utils/mkdirs-vault'
+import { writeLocalBinary } from '~/utils/local-file'
 import { BaseTask, BaseTaskOptions, toTaskError } from './task.interface'
 
 export default class PullTask extends BaseTask {
@@ -17,7 +18,6 @@ export default class PullTask extends BaseTask {
 	}
 
 	async exec() {
-		const fileExists = await this.vault.getFileByPath(this.localPath)
 		try {
 			if (!this.remoteStorage) {
 				throw new Error('Remote storage not available')
@@ -31,12 +31,8 @@ export default class PullTask extends BaseTask {
 			if (arrayBuffer.byteLength !== this.remoteSize) {
 				throw new Error('Remote Size Not Match!')
 			}
-			if (fileExists) {
-				await this.vault.modifyBinary(fileExists, arrayBuffer)
-			} else {
-				await mkdirsVault(this.vault, dirname(this.localPath))
-				await this.vault.createBinary(this.localPath, arrayBuffer)
-			}
+			await mkdirsVault(this.vault, dirname(this.localPath))
+			await writeLocalBinary(this.vault, this.localPath, arrayBuffer)
 			return { success: true } as const
 		} catch (e) {
 			logger.error(this, e)

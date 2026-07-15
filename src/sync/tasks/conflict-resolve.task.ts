@@ -5,6 +5,7 @@ import { SyncRecordModel } from '~/model/sync-record.model'
 import { RemoteBufferLike } from '~/remote-storage/remote-storage.interface'
 import { blobStore } from '~/storage/blob'
 import { isMergeablePath } from '~/sync/utils/is-mergeable-path'
+import { readLocalBinary, writeLocalBinary } from '~/utils/local-file'
 import logger from '~/utils/logger'
 import { mergeDigIn } from '~/utils/merge-dig-in'
 import { statVaultItem } from '~/utils/stat-vault-item'
@@ -92,17 +93,7 @@ export default class ConflictResolveTask extends BaseTask {
 				return { success: true } as const
 			}
 
-			const file = this.vault.getFileByPath(this.localPath)
-			if (!file) {
-				return {
-					success: false,
-					error: toTaskError(
-						new Error('cannot find file in local fs: ' + this.localPath),
-						this,
-					),
-				}
-			}
-			const localContent = await this.vault.readBinary(file)
+			const localContent = await readLocalBinary(this.vault, this.localPath)
 			let remoteContent: RemoteBufferLike
 			if (this.remoteStorage) {
 				remoteContent = await this.remoteStorage.getFileContents(this.remotePath)
@@ -123,7 +114,7 @@ export default class ConflictResolveTask extends BaseTask {
 						result.content instanceof ArrayBuffer
 							? result.content
 							: new Uint8Array(result.content).buffer
-					await this.vault.modifyBinary(file, arrayBuffer)
+					await writeLocalBinary(this.vault, this.localPath, arrayBuffer)
 					break
 				case LatestTimestampResolution.UseLocal:
 					if (this.remoteStorage) {

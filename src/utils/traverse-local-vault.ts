@@ -22,26 +22,57 @@ export async function traverseLocalVault(vault: Vault, from: string) {
 	}
 
 	while (q.length > 0) {
-		const from = q.shift()
-		if (isNil(from)) {
+		const current = q.shift()
+		if (isNil(current)) {
 			continue
 		}
-		const folder = vault.getAbstractFileByPath(normalizePath(from))
-		if (!folder || !(folder instanceof TFolder)) {
-			continue
+
+		const normalizedCurrent = normalizePath(current)
+		const { files, folders } = await listLocalFolder(vault, normalizedCurrent)
+		let nextFolders = folders
+
+		if (normalizedCurrent === vault.getRoot().path) {
+			const configDir = normalizePath(vault.configDir)
+			if (
+				!nextFolders.includes(configDir) &&
+				await vault.adapter.exists(configDir)
+			) {
+				nextFolders = [...nextFolders, configDir]
+			}
 		}
-		const files = folder.children
-			.filter((f) => !(f instanceof TFolder))
-			.map((f) => f.path)
-		let folders = folder.children
-			.filter((f) => f instanceof TFolder)
-			.map((f) => f.path)
-		folders = folders.filter(folderFilter)
-		q.push(...folders)
+
+		nextFolders = nextFolders.filter(folderFilter)
+		q.push(...nextFolders)
+
 		const contents = await Promise.all(
-			[...files, ...folders].map(partial(statVaultItem, vault)),
+			[...files, ...nextFolders].map(partial(statVaultItem, vault)),
 		).then((arr) => arr.filter(isNotNil))
 		res.push(...contents)
 	}
 	return res
+}
+
+async function listLocalFolder(vault: Vault, folderPath: string) {
+	const folder = vault.getAbstractFileByPath(folderPath)
+	if (folder instanceof TFolder) {
+		return {
+			files: folder.children
+				.filter((f) => !(f instanceof TFolder))
+				.map((f) => f.path),
+			folders: folder.children
+				.filter((f) => f instanceof TFolder)
+				.map((f) => f.path),
+		}
+	}
+
+	const stat = await vault.adapter.stat(folderPath)
+	if (stat?.type !== 'folder') {
+		return { files: [], folders: [] }
+	}
+
+	const listed = await vault.adapter.list(folderPath)
+	return {
+		files: listed.files,
+		folders: listed.folders,
+	}
 }

@@ -134,6 +134,8 @@ function Test-GitHubReleaseExists {
 	try {
 		& gh release view $Version *> $null
 		return ($LASTEXITCODE -eq 0)
+	} catch {
+		return $false
 	} finally {
 		Pop-Location
 	}

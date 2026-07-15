@@ -11,10 +11,14 @@
 const INVALID_CHARS = '\\/\t\r\n'
 const INVALID_CHARS_LIST = INVALID_CHARS.split('')
 
+function basename(path: string): string {
+	return path.split(/[\\/]/).pop() ?? path
+}
+
 export function hasInvalidChar(str: string) {
-	return INVALID_CHARS_LIST.some((c) => str.includes(c))
+	return INVALID_CHARS_LIST.some((c) => basename(str).includes(c))
 }
 
 export function getInvalidChars(str: string): string[] {
-	return INVALID_CHARS_LIST.filter((c) => str.includes(c))
+	return INVALID_CHARS_LIST.filter((c) => basename(str).includes(c))
 }

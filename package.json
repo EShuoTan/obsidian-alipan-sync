@@ -7,8 +7,9 @@
 		"dev:plugin": "node esbuild.config.mjs",
 		"dev:remote-explorer": "pnpm --filter remote-explorer dev",
 		"build": "run-s build:remote-explorer build:plugin",
+		"build:push": "powershell -ExecutionPolicy Bypass -File scripts/build-and-push.ps1",
 		"build:remote-explorer": "pnpm --filter remote-explorer build",
-		"build:plugin": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && swc ./dist/main.js -o ./dist/main.js && cp manifest.json ./dist/manifest.json",
+		"build:plugin": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && swc ./dist/main.js -o ./dist/main.js && node -e \"require('fs').copyFileSync('manifest.json', 'dist/manifest.json')\"",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"test": "vitest"
 	},

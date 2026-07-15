@@ -5,6 +5,7 @@ import esbuild from 'esbuild'
 import fs, { readFileSync } from 'fs'
 import postcssMergeRules from 'postcss-merge-rules'
 import process from 'process'
+import unoConfig from './uno.config.mjs'
 
 const pkgJson = JSON.parse(readFileSync('./package.json', 'utf-8'))
 dotenv.config()
@@ -83,7 +84,7 @@ const context = await esbuild.context({
 	plugins: [
 		patchLocalforage,
 		postcss({
-			plugins: [UnoCSS(), postcssMergeRules()],
+			plugins: [UnoCSS({ configOrPath: unoConfig }), postcssMergeRules()],
 		}),
 		renamePlugin,
 	],

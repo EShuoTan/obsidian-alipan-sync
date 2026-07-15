@@ -163,6 +163,7 @@ export default class AlipanSyncPlugin extends Plugin {
 					this.app.vault.configDir,
 				].map(createGlobMathOptions),
 				inclusionRules: [],
+				overwriteRules: [],
 			},
 			skipLargeFiles: {
 				maxSize: '30 MB',
@@ -174,6 +175,10 @@ export default class AlipanSyncPlugin extends Plugin {
 		}
 
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
+		this.settings.filterRules = {
+			...DEFAULT_SETTINGS.filterRules,
+			...(this.settings.filterRules ?? {}),
+		}
 	}
 
 	async saveSettings() {

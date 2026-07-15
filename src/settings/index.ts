@@ -63,6 +63,7 @@ export interface AlipanSyncSettings {
 	filterRules: {
 		exclusionRules: GlobMatchOptions[]
 		inclusionRules: GlobMatchOptions[]
+		overwriteRules: GlobMatchOptions[]
 	}
 	skipLargeFiles: {
 		maxSize: string

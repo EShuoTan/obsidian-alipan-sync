@@ -1,5 +1,6 @@
 import { parse as bytesParse } from 'bytes-iec'
 import { SyncMode } from '~/settings'
+import GlobMatch, { isVoidGlobMatchOptions } from '~/utils/glob-match'
 import { hasInvalidChar } from '~/utils/has-invalid-char'
 import { isSameTime } from '~/utils/is-same-time'
 import logger from '~/utils/logger'
@@ -38,6 +39,12 @@ export async function twoWayDecider(
 	if (maxFileSizeStr !== '') {
 		maxFileSize = bytesParse(maxFileSizeStr, { mode: 'jedec' }) ?? Infinity
 	}
+
+	const overwriteRules = settings.overwriteRules
+		.filter((opt) => !isVoidGlobMatchOptions(opt))
+		.map(({ expr, options }) => new GlobMatch(expr, options))
+	const shouldOverwriteByTimestamp = (path: string) =>
+		overwriteRules.some((rule) => rule.test(path))
 
 	// Filter out ignored files and extract StatModel from FsWalkResult
 	const localStatsFiltered = localStats
@@ -120,6 +127,7 @@ export async function twoWayDecider(
 					}
 					if (remoteChanged) {
 						if (localChanged) {
+							const overwriteByTimestamp = shouldOverwriteByTimestamp(p)
 							logDecision('both changed → conflict', p)
 							if (remote.size > maxFileSize || local.size > maxFileSize) {
 								tasks.push(
@@ -141,8 +149,9 @@ export async function twoWayDecider(
 									taskFactory.createConflictResolveTask({
 										...options,
 										record,
-										strategy:
-											settings.conflictStrategy === 'latest-timestamp'
+										strategy: overwriteByTimestamp
+											? ConflictStrategy.LatestTimeStamp
+											: settings.conflictStrategy === 'latest-timestamp'
 												? ConflictStrategy.LatestTimeStamp
 												: ConflictStrategy.DiffMatchPatch,
 										localStat: local,
@@ -255,7 +264,9 @@ export async function twoWayDecider(
 		} else {
 			if (remote) {
 				if (local) {
+					const overwriteByTimestamp = shouldOverwriteByTimestamp(p)
 					if (
+						!overwriteByTimestamp &&
 						settings.syncMode === SyncMode.LOOSE &&
 						!remote.isDeleted &&
 						!remote.isDir &&
@@ -289,7 +300,9 @@ export async function twoWayDecider(
 						tasks.push(
 							taskFactory.createConflictResolveTask({
 								...options,
-								strategy: ConflictStrategy.DiffMatchPatch,
+								strategy: overwriteByTimestamp
+									? ConflictStrategy.LatestTimeStamp
+									: ConflictStrategy.DiffMatchPatch,
 								localStat: local,
 								remoteStat: remote,
 								useGitStyle: settings.useGitStyle,

@@ -90,6 +90,7 @@ export default class TwoWaySyncDecider extends BaseSyncDecider {
 				conflictStrategy: this.settings.conflictStrategy,
 				useGitStyle: this.settings.useGitStyle,
 				syncMode: this.settings.syncMode,
+				overwriteRules: this.settings.filterRules.overwriteRules,
 			},
 			localStats,
 			remoteStats,

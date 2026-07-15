@@ -171,13 +171,19 @@ function folderRecord(path: string): [string, SyncRecordItem] {
  * Create a mock TaskFactory that records which tasks are created
  */
 function createMockTaskFactory() {
-	const createdTasks: Array<{ type: string; localPath: string; remotePath: string }> = []
+	const createdTasks: Array<{
+		type: string
+		localPath: string
+		remotePath: string
+		options: any
+	}> = []
 
 	const mockTask = (type: string) => (options: any) => {
 		createdTasks.push({
 			type,
 			localPath: options.localPath,
 			remotePath: options.remotePath,
+			options,
 		})
 		return {
 			localPath: options.localPath,
@@ -213,6 +219,7 @@ function createInput(overrides: Partial<SyncDecisionInput>): SyncDecisionInput {
 			conflictStrategy: 'diff-match-patch' as any,
 			useGitStyle: false,
 			syncMode: 'strict' as any,
+			overwriteRules: [],
 		},
 		localStats: [],
 		remoteStats: [],
@@ -416,5 +423,68 @@ describe('twoWayDecider - remote has only folders (no files)', () => {
 		// 应该有 push 任务把文件推回远端
 		const pushTasks = createdTasks.filter((t) => t.type === 'push')
 		expect(pushTasks.length).toBe(2)
+	})
+})
+
+describe('twoWayDecider - overwrite rules', () => {
+	it('uses latest timestamp instead of merge when an overwrite rule matches a changed file on both sides', async () => {
+		const { factory, createdTasks } = createMockTaskFactory()
+
+		const input = createInput({
+			localStats: [localFile('.obsidian/app.json', 3000)],
+			remoteStats: [remoteFile('.obsidian/app.json', 4000)],
+			syncRecords: new Map<string, SyncRecordItem>([
+				fileRecord('.obsidian/app.json', 1000, 1000),
+			]),
+			taskFactory: factory,
+			settings: {
+				skipLargeFiles: { maxSize: '' },
+				conflictStrategy: 'diff-match-patch' as any,
+				useGitStyle: false,
+				syncMode: 'strict' as any,
+				overwriteRules: [
+					{
+						expr: '.obsidian/**',
+						options: { caseSensitive: false },
+					},
+				],
+			},
+		})
+
+		await twoWayDecider(input)
+
+		const conflictTasks = createdTasks.filter((t) => t.type === 'conflict')
+		expect(conflictTasks).toHaveLength(1)
+		expect(conflictTasks[0].options.strategy).toBe('latest-timestamp')
+	})
+
+	it('does not let loose-mode same-size noop override a matching overwrite rule', async () => {
+		const { factory, createdTasks } = createMockTaskFactory()
+
+		const input = createInput({
+			localStats: [localFile('.obsidian/workspace.json', 3000, 120)],
+			remoteStats: [remoteFile('.obsidian/workspace.json', 4000, 120)],
+			syncRecords: new Map<string, SyncRecordItem>(),
+			taskFactory: factory,
+			settings: {
+				skipLargeFiles: { maxSize: '' },
+				conflictStrategy: 'diff-match-patch' as any,
+				useGitStyle: false,
+				syncMode: 'loose' as any,
+				overwriteRules: [
+					{
+						expr: '.obsidian/**',
+						options: { caseSensitive: false },
+					},
+				],
+			},
+		})
+
+		await twoWayDecider(input)
+
+		expect(createdTasks.filter((t) => t.type === 'noop')).toHaveLength(0)
+		const conflictTasks = createdTasks.filter((t) => t.type === 'conflict')
+		expect(conflictTasks).toHaveLength(1)
+		expect(conflictTasks[0].options.strategy).toBe('latest-timestamp')
 	})
 })

@@ -7,6 +7,7 @@ import AlipanSyncPlugin from '..'
 enum FilterType {
 	Include = 'include',
 	Exclude = 'exclude',
+	Overwrite = 'overwrite',
 }
 
 export default class FilterEditorModal extends Modal {
@@ -31,10 +32,14 @@ export default class FilterEditorModal extends Modal {
 		const titleKey =
 			this.filterType === FilterType.Include
 				? 'settings.filters.include.name'
+				: this.filterType === FilterType.Overwrite
+					? 'settings.filters.overwrite.name'
 				: 'settings.filters.exclude.name'
 		const descKey =
 			this.filterType === FilterType.Include
 				? 'settings.filters.include.desc'
+				: this.filterType === FilterType.Overwrite
+					? 'settings.filters.overwrite.desc'
 				: 'settings.filters.exclude.desc'
 
 		contentEl.createEl('h2', { text: i18n.t(titleKey) })

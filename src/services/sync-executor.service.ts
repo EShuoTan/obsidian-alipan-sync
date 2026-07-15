@@ -16,28 +16,12 @@ export default class SyncExecutorService {
 			return false
 		}
 
-		// 检查账号配置，未配置时静默返回（自动同步场景）
 		if (!this.plugin.isAccountConfigured()) {
 			return false
 		}
 
 		await waitUntil(() => this.plugin.isSyncing === false, 500)
 
-		// 确保 configDir 始终在排除列表中，因为这个目录里的文件不支持同步
-		const configDir = this.plugin.app.vault.configDir
-		const hasConfigDirRule =
-			this.plugin.settings.filterRules.exclusionRules.some(
-				(rule) => rule.expr === configDir,
-			)
-		if (!hasConfigDirRule) {
-			this.plugin.settings.filterRules.exclusionRules.push({
-				expr: configDir,
-				options: { caseSensitive: false },
-			})
-			await this.plugin.saveSettings()
-		}
-
-		// Build remote storage
 		const remoteStorage = await this.plugin.createRemoteStorage?.()
 		logger.info(
 			`Sync: remoteStorage created, type=${remoteStorage?.type ?? 'undefined'}`,
@@ -50,7 +34,6 @@ export default class SyncExecutorService {
 			return false
 		}
 
-		// Ensure remote base directory exists before deciding sync tasks.
 		const remoteBaseDir = this.plugin.remoteBaseDir
 		const normalizedDir = stdRemotePath(remoteBaseDir)
 		const exists = await remoteStorage.exists(normalizedDir)
@@ -73,7 +56,6 @@ export default class SyncExecutorService {
 			mode: options.mode,
 		})
 
-		// Persist Alipan path resolver cache
 		if (remoteStorage && 'resolver' in remoteStorage) {
 			try {
 				const resolver = (remoteStorage as { resolver: { exportCache(): Record<string, string> } }).resolver

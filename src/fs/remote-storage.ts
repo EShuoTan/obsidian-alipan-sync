@@ -72,7 +72,10 @@ export class RemoteStorageFileSystem implements AbstractFileSystem {
 		// Apply glob filter rules
 		const settings = await useSettings()
 		const exclusions = this.buildRules(settings?.filterRules.exclusionRules)
-		const inclusions = this.buildRules(settings?.filterRules.inclusionRules)
+		const inclusions = this.buildRules([
+			...(settings?.filterRules.overwriteRules ?? []),
+			...(settings?.filterRules.inclusionRules ?? []),
+		])
 
 		const includedStats = stats.filter((stat) =>
 			needIncludeFromGlobRules(stat.path, inclusions, exclusions),

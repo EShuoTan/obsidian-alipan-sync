@@ -29,6 +29,25 @@ export default class FilterSettings extends BaseSettings {
 				})
 			})
 
+		// Overwrite
+		new Setting(this.containerEl)
+			.setName(i18n.t('settings.filters.overwrite.name'))
+			.setDesc(i18n.t('settings.filters.overwrite.desc'))
+			.addButton((button) => {
+				button.setButtonText(i18n.t('settings.filters.edit')).onClick(() => {
+					new FilterEditorModal(
+						this.plugin,
+						this.plugin.settings.filterRules.overwriteRules,
+						async (filters) => {
+							this.plugin.settings.filterRules.overwriteRules = filters
+							await this.plugin.saveSettings()
+							this.display()
+						},
+						FilterEditorModal.FilterType.Overwrite,
+					).open()
+				})
+			})
+
 		// Exclusion
 		new Setting(this.containerEl)
 			.setName(i18n.t('settings.filters.exclude.name'))

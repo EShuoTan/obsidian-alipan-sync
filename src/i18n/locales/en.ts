@@ -178,6 +178,10 @@ export default {
 				name: 'Inclusion rules',
 				desc: 'Files/folders matching these patterns WILL be synced (if defined).',
 			},
+			overwrite: {
+				name: 'Overwrite sync rules',
+				desc: 'Highest priority. Matching files will not be merged; the newer local or remote version overwrites the older one by modified time.',
+			},
 		},
 		skipLargeFiles: {
 			name: 'Skip large files',

@@ -21,7 +21,10 @@ export class LocalVaultFileSystem implements AbstractFileSystem {
 	async walk() {
 		const settings = await useSettings()
 		const exclusions = this.buildRules(settings?.filterRules.exclusionRules)
-		const inclusions = this.buildRules(settings?.filterRules.inclusionRules)
+		const inclusions = this.buildRules([
+			...(settings?.filterRules.overwriteRules ?? []),
+			...(settings?.filterRules.inclusionRules ?? []),
+		])
 
 		const stats = await traverseLocalVault(
 			this.options.vault,

@@ -4,12 +4,14 @@ import { SyncMode } from '~/settings'
 import { ConflictStrategy } from '../tasks/conflict-resolve.task'
 import { SkipReason } from '../tasks/skipped.task'
 import { BaseTask } from '../tasks/task.interface'
+import { GlobMatchOptions } from '~/utils/glob-match'
 
 export interface SyncDecisionSettings {
 	skipLargeFiles: { maxSize: string }
 	conflictStrategy: ConflictStrategy
 	useGitStyle: boolean
 	syncMode: SyncMode
+	overwriteRules: GlobMatchOptions[]
 }
 
 export interface SyncRecordItem {

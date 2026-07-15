@@ -23,5 +23,6 @@ data.json
 
 # build output
 dist
+.release-assets/
 styles.css
 main.js
